@@ -205,3 +205,12 @@ cython_debug/
 marimo/_static/
 marimo/_lsp/
 __marimo__/
+
+# ML project specific
+results/
+unsloth_results/
+data/toy_train.json
+data/toy_test.json
+*.log
+.gemini/
+.DS_Store
