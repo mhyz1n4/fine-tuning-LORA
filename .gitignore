@@ -212,5 +212,5 @@ unsloth_results/
 data/toy_train.json
 data/toy_test.json
 *.log
-.gemini/
+# .gemini/    # push gemini settings
 .DS_Store
