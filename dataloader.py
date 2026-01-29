@@ -1,5 +1,6 @@
 import json
 from datasets import Dataset, load_dataset
+from logger import project_logger as logger
 
 def format_alpaca(sample):
     """
@@ -40,7 +41,7 @@ def load_and_process_dataset(file_path):
         
         return processed_dataset
     except Exception as e:
-        print(f"Error loading dataset from {file_path}: {e}")
+        logger.error(f"Error loading dataset from {file_path}: {e}")
         return None
 
 if __name__ == "__main__":
@@ -48,6 +49,8 @@ if __name__ == "__main__":
     train_path = "data/toy_train.json"
     ds = load_and_process_dataset(train_path)
     if ds:
-        print(f"Successfully loaded and processed {len(ds)} samples.")
-        print("Sample entry:")
-        print(ds[0]['text'])
+        logger.info(f"Successfully loaded and processed {len(ds)} samples.")
+        logger.log_block([
+            "Sample entry:",
+            ds[0]['text']
+        ])

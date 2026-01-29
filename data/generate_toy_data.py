@@ -1,6 +1,11 @@
 import json
 import random
 import os
+import sys
+
+# Add parent directory to path to import logger
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+from logger import project_logger as logger
 
 def generate_entry(idx):
     # Generate simple arithmetic problems
@@ -37,14 +42,14 @@ def main():
     train_path = os.path.join(output_dir, "toy_train.json")
     with open(train_path, "w") as f:
         json.dump(train_data, f, indent=2)
-    print(f"Generated {len(train_data)} training samples at {train_path}")
+    logger.info(f"Generated {len(train_data)} training samples at {train_path}")
 
     # Generate Testing Data (20 samples)
     test_data = [generate_entry(i) for i in range(200, 220)]
     test_path = os.path.join(output_dir, "toy_test.json")
     with open(test_path, "w") as f:
         json.dump(test_data, f, indent=2)
-    print(f"Generated {len(test_data)} testing samples at {test_path}")
+    logger.info(f"Generated {len(test_data)} testing samples at {test_path}")
 
 if __name__ == "__main__":
     main()

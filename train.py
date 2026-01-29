@@ -12,6 +12,7 @@ from peft import LoraConfig, get_peft_model, prepare_model_for_kbit_training, Ta
 from trl import SFTTrainer, SFTConfig
 from util import load_yaml_config
 from dataloader import load_and_process_dataset
+from logger import project_logger as logger
 
 def get_args():
     parser = argparse.ArgumentParser(description="Fine-tune a language model using LoRA.")
@@ -37,19 +38,19 @@ def main():
     if args.use_cpu:
         device_map = "cpu"
         use_quantization = False
-        print("Training on CPU. Quantization disabled.")
+        logger.info("Training on CPU. Quantization disabled.")
     elif torch.cuda.is_available():
         device_map = "auto"
         use_quantization = True
-        print("Training on GPU (CUDA) with 4-bit quantization.")
+        logger.info("Training on GPU (CUDA) with 4-bit quantization.")
     elif torch.backends.mps.is_available():
         device_map = "auto" # or {"": "mps"}
         use_quantization = False # bitsandbytes usually doesn't work on MPS
-        print("Training on MPS (Mac GPU). Quantization disabled.")
+        logger.info("Training on MPS (Mac GPU). Quantization disabled.")
     else:
         device_map = "cpu"
         use_quantization = False
-        print("Training on CPU. Quantization disabled.")
+        logger.info("Training on CPU. Quantization disabled.")
 
     # 1. Load Tokenizer
     tokenizer = AutoTokenizer.from_pretrained(args.model_id, trust_remote_code=True)
@@ -124,10 +125,10 @@ def main():
     # 5. Dataset
     # Check if dataset_name is a local file (e.g., .json) or a HF dataset
     if args.dataset_name.endswith(".json") and os.path.exists(args.dataset_name):
-        print(f"Loading local dataset from {args.dataset_name}")
+        logger.info(f"Loading local dataset from {args.dataset_name}")
         dataset = load_and_process_dataset(args.dataset_name)
     else:
-        print(f"Loading dataset from Hugging Face: {args.dataset_name}")
+        logger.info(f"Loading dataset from Hugging Face: {args.dataset_name}")
         dataset = load_dataset(args.dataset_name, split="train")
 
     # 6. Trainer
@@ -140,11 +141,11 @@ def main():
     )
 
     # 7. Train
-    print("Starting training...")
+    logger.info("Starting training...")
     trainer.train()
 
     # 8. Save
-    print(f"Saving model to {args.output_dir}")
+    logger.info(f"Saving model to {args.output_dir}")
     trainer.save_model(args.output_dir)
 
 if __name__ == "__main__":

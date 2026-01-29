@@ -214,3 +214,5 @@ data/toy_test.json
 *.log
 # .gemini/    # push gemini settings
 .DS_Store
+unsloth_compiled_cache/
+evaluation/eval_results/
