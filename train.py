@@ -1,3 +1,6 @@
+"""
+Standard training script using Hugging Face Transformers and PEFT.
+"""
 import argparse
 import os
 import torch
@@ -16,7 +19,7 @@ from logger import project_logger as logger
 
 def get_args():
     parser = argparse.ArgumentParser(description="Fine-tune a language model using LoRA.")
-    parser.add_argument("--model_id", type=str, default="Qwen/Qwen2.5-7B", help="Hugging Face model ID")
+    parser.add_argument("--model_id", type=str, default="Qwen/Qwen3-8B", help="Hugging Face model ID")
     parser.add_argument("--dataset_name", type=str, default="data/toy_train.json", help="Hugging Face dataset ID or local path")
     parser.add_argument("--output_dir", type=str, default="./results", help="Output directory for checkpoints")
     parser.add_argument("--num_train_epochs", type=int, default=1, help="Number of training epochs")
@@ -113,8 +116,9 @@ def main():
         lr_scheduler_type="constant",
         report_to="none",
         use_cpu=args.use_cpu,
+        gradient_checkpointing=True,
         dataset_text_field="text",
-        max_length=512,
+        max_length=256,
         packing=False,
     )
     

@@ -1,3 +1,6 @@
+"""
+Custom logger configuration for the project.
+"""
 import logging
 import sys
 

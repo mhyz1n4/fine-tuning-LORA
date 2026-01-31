@@ -1,3 +1,6 @@
+"""
+Script to generate toy datasets for training and testing purposes.
+"""
 import json
 import random
 import os

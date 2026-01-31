@@ -1,3 +1,6 @@
+"""
+Script to export Unsloth LoRA adapters or generate outputs.
+"""
 import argparse
 import os
 import torch
@@ -6,7 +9,7 @@ from logger import project_logger as logger
 
 def get_args():
     parser = argparse.ArgumentParser(description="Export Unsloth LoRA adapters for vLLM or TensorRT-LLM deployment.")
-    parser.add_argument("--model_id", type=str, default="Qwen/Qwen2.5-7B-Instruct", help="Base model ID")
+    parser.add_argument("--model_id", type=str, default="Qwen/Qwen3-8B-Instruct", help="Base model ID")
     parser.add_argument("--lora_path", type=str, default="unsloth_results", help="Path to LoRA adapters")
     parser.add_argument("--output_dir", type=str, required=True, help="Base output directory for exported models")
     parser.add_argument("--format", type=str, choices=["vllm", "tensorrt", "both"], default="both", help="Target deployment format")
@@ -56,8 +59,8 @@ def export_for_tensorrt(model, tokenizer, output_path):
         "\n1. Pull the container:",
         "   docker pull nvcr.io/nvidia/tensorrt-llm:latest",
         "\n2. Run the build command (adjust --output_dir and GPU architecture):",
-        f"   trtllm-build --checkpoint_dir {os.path.abspath(output_path)} \",
-        f"                --output_dir {os.path.abspath(output_path)}_engine \",
+        f"   trtllm-build --checkpoint_dir {os.path.abspath(output_path)} \\",
+        f"                --output_dir {os.path.abspath(output_path)}_engine \\",
         f"                --gemm_plugin float16",
         "-" * 60
     ])

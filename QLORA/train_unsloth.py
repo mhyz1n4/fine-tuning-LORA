@@ -1,3 +1,6 @@
+"""
+Training script using Unsloth for QLoRA fine-tuning.
+"""
 import argparse
 import torch
 import os
@@ -13,7 +16,7 @@ from logger import project_logger as logger
 
 def get_args():
     parser = argparse.ArgumentParser(description="Fine-tune a language model using Unsloth.")
-    parser.add_argument("--model_id", type=str, default="Qwen/Qwen2.5-7B-Instruct", help="Model ID")
+    parser.add_argument("--model_id", type=str, default="Qwen/Qwen3-8B-Instruct", help="Model ID")
     parser.add_argument("--dataset_path", type=str, default="data/toy_train.json", help="Path to local dataset JSON")
     parser.add_argument("--output_dir", type=str, default="./unsloth_results", help="Output directory")
     parser.add_argument("--max_seq_length", type=int, default=2048, help="Max sequence length")
