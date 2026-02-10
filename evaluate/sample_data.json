@@ -1,0 +1,7 @@
+[
+  {
+    "instruction": "Explain the concept of backpropagation in neural networks.",
+    "ground_truth": "Backpropagation is a method used in artificial neural networks to calculate a gradient that is needed in the calculation of the weights to be used in the network. It is shorthand for 'backward propagation of errors', since an error is computed at the output and distributed backwards throughout the network's layers. It is commonly used by the gradient descent optimization algorithm to adjust the weight of neurons by calculating the gradient of the loss function with respect to all the weights in the network.",
+    "model_output": "Backpropagation is how neural networks learn. It takes the error at the end and moves it back through the layers to update the weights using calculus (chain rule). This helps the model minimize the loss function over time."
+  }
+]
