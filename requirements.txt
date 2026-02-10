@@ -5,5 +5,12 @@ accelerate
 bitsandbytes
 datasets
 trl
-unsloth
+unsloth[colab-new] @ git+https://github.com/unslothai/unsloth.git
+unsloth_zoo
+xformers
+torchvision
+sentencepiece
+protobuf
 PyYAML
+packaging
+wheel

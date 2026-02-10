@@ -16,8 +16,8 @@ from logger import project_logger as logger
 from util import load_yaml_config
 
 def formatting_prompts_func(examples):
-    instructions = examples["question"]
-    outputs      = examples["answer"]
+    instructions = examples["query"]
+    outputs      = examples["response"]
     texts = []
     for instruction, output in zip(instructions, outputs):
         text = f"Below is an instruction that describes a task. Write a response that appropriately completes the request.\n\n### Instruction:\n{instruction}\n\n### Response:\n{output}"
@@ -43,7 +43,7 @@ class TimeEstimationCallback(TrainerCallback):
 
 def get_args():
     parser = argparse.ArgumentParser(description="Fine-tune with Unsloth using YAML config.")
-    parser.add_argument("--config_path", type=str, default="QLORA/kuvera_config.yaml", help="Path to YAML config")
+    parser.add_argument("--config_path", type=str, default="QLORA/QLORA_unsloth.yaml", help="Path to YAML config")
     parser.add_argument("--estimate_only", action="store_true", help="Run 1 step to estimate time")
     return parser.parse_args()
 
@@ -60,7 +60,8 @@ def main():
         model_name = m_cfg["model_id"],
         max_seq_length = m_cfg["max_seq_length"],
         dtype = None,
-        load_in_4bit = m_cfg["load_in_4bit"],
+        load_in_4bit = m_cfg.get("load_in_4bit", False),
+        load_in_8bit = m_cfg.get("load_in_8bit", False),
     )
 
     model = FastLanguageModel.get_peft_model(
@@ -94,7 +95,7 @@ def main():
         output_dir = t_cfg["output_dir"],
         save_steps = t_cfg["save_steps"],
         save_total_limit = t_cfg["save_total_limit"],
-        evaluation_strategy = t_cfg["evaluation_strategy"],
+        eval_strategy = t_cfg["evaluation_strategy"],
         eval_steps = t_cfg["eval_steps"],
         report_to = "none",
     )
