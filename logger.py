@@ -23,6 +23,17 @@ class Logger:
                 file_handler.setFormatter(formatter)
                 self.logger.addHandler(file_handler)
 
+    def add_file_handler(self, log_file):
+        """Adds a file handler to the logger if it doesn't already have one."""
+        for handler in self.logger.handlers:
+            if isinstance(handler, logging.FileHandler):
+                return
+        
+        formatter = logging.Formatter('%(asctime)s - %(levelname)s - %(message)s', datefmt='%Y-%m-%d %H:%M:%S')
+        file_handler = logging.FileHandler(log_file)
+        file_handler.setFormatter(formatter)
+        self.logger.addHandler(file_handler)
+
     def info(self, message):
         self.logger.info(message)
 

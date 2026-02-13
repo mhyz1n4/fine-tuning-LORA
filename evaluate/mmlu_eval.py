@@ -35,6 +35,7 @@ def run_comprehensive_eval(model_id, subjects, total_limit):
 
     all_y_true = []
     all_y_pred = []
+    detailed_results = []
     
     # Calculate samples per subject to reach total_limit
     samples_per_subject = max(1, total_limit // len(subjects))
@@ -57,20 +58,31 @@ def run_comprehensive_eval(model_id, subjects, total_limit):
             with torch.no_grad():
                 outputs = model.generate(
                     **inputs,
-                    max_new_tokens=1,
+                    max_new_tokens=5, # Slightly increased to capture potential whitespace/context
                     do_sample=False,
                     pad_token_id=tokenizer.eos_token_id
                 )
             
-            # Decode only the last token
-            raw_pred = tokenizer.decode(outputs[0][-1], skip_special_tokens=True).strip().upper()
+            # Decode the generated tokens
+            full_response = tokenizer.decode(outputs[0][inputs.input_ids.shape[1]:], skip_special_tokens=True).strip()
             
             # Basic validation of prediction format
-            y_pred = raw_pred[0] if len(raw_pred) > 0 and raw_pred[0] in "ABCD" else "INVALID"
+            y_pred_raw = full_response.upper()
+            y_pred = y_pred_raw[0] if len(y_pred_raw) > 0 and y_pred_raw[0] in "ABCD" else "INVALID"
             y_true = chr(65 + example['answer'])
             
             all_y_true.append(y_true)
             all_y_pred.append(y_pred)
+            
+            detailed_results.append({
+                "subject": subject,
+                "question": example['question'],
+                "prompt": prompt,
+                "model_response": full_response,
+                "predicted": y_pred,
+                "ground_truth": y_true,
+                "is_correct": y_pred == y_true
+            })
 
     # Filter out invalid predictions for metric calculation
     valid_indices = [i for i, p in enumerate(all_y_pred) if p != "INVALID"]
@@ -111,7 +123,8 @@ def run_comprehensive_eval(model_id, subjects, total_limit):
         "per_class_metrics": {
             label: {"precision": p, "recall": r, "f1": f}
             for label, p, r, f in zip(["A", "B", "C", "D"], p_class, r_class, f1_class)
-        }
+        },
+        "detailed_results": detailed_results
     }
 
     print(f"\n--- Comprehensive MMLU Results ---")
