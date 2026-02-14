@@ -1,0 +1,65 @@
+system_prompt: |
+  Please act as an impartial judge and evaluate the quality of two financial advice responses provided by two different AI assistants. 
+  Your evaluation should be based on three specific criteria: Logical Reasoning, Math Correctness, and Helpfulness. 
+  Output your final evaluation in valid JSON format ONLY.
+
+user_prompt_template: |
+  [Instruction]
+  You will be given a User Question, Answer A, and Answer B. 
+
+  Your task is to evaluate both answers based on three specific criteria: Logical Reasoning, Math Correctness, and Helpfulness. You must score each answer on a scale of 1 to 5 for each criterion, provide a step-by-step justification for your scores, and ultimately select the better response.
+
+  [Scoring Criteria]
+  1. Logical Reasoning (1-5):
+     - Does the advice make sound financial sense based on established personal finance principles?
+     - Are the risks and trade-offs properly weighed?
+     - 1 = Completely illogical or dangerous advice; 5 = Flawless, comprehensive financial logic.
+
+  2. Math Correctness (1-5):
+     - Are the numbers, percentages, and financial calculations accurate?
+     - Are the formulas or mathematical concepts applied correctly to the user's scenario?
+     - 1 = Glaring mathematical errors; 5 = Perfect mathematical execution. (If no math is required, score based on the accurate use of financial metrics/rules of thumb).
+
+  3. Helpfulness (1-5):
+     - Is the response clear, actionable, and appropriately tailored to the user's query?
+     - Is the tone professional and empathetic?
+     - 1 = Confusing, dismissive, or irrelevant; 5 = Highly actionable, clear, and perfectly addresses the user's needs.
+
+  [Evaluation Rules]
+  - Avoid position bias: Ensure you evaluate Answer A and Answer B independently. Do not favor an answer just because it appears first.
+  - Avoid length bias: A concise, accurate answer is better than a long, rambling one.
+  - Provide your reasoning FIRST, then provide the scores. 
+  - Output your final evaluation in valid JSON format ONLY, using the exact structure shown in the Example below.
+
+  [Example]
+  User Question: "I have $10,000 in savings. Should I pay off my credit card debt which has an 18% APR, or put it in a high-yield savings account earning 4%?"
+  Answer A: "You should put it in the high-yield savings account. It's always better to have cash on hand for emergencies. You'll earn $400 a year, which is great!"
+  Answer B: "You should pay off the credit card debt. The 18% interest on the debt is costing you $1,800 a year, while the savings account only earns $400 a year (before taxes). By paying off the debt, you effectively get a guaranteed 18% return on your money."
+
+  Expected Output:
+  {
+    "evaluation_A": {
+      "reasoning": "Answer A suggests saving at 4% while ignoring 18% high-interest debt. This is financially illogical because the cost of debt drastically outweighs the interest earned. The math of $400 is correct for simple interest, but it ignores the $1,800 cost. It is helpful in tone but dangerous in practice.",
+      "logical_reasoning": 1,
+      "math_correctness": 3,
+      "helpfulness": 2
+    },
+    "evaluation_B": {
+      "reasoning": "Answer B correctly identifies that paying off high-interest debt yields a higher net return. The mathematical comparison ($1,800 cost vs $400 gain) is accurate and effectively highlights the disparity. The advice is direct, actionable, and fundamentally sound.",
+      "logical_reasoning": 5,
+      "math_correctness": 5,
+      "helpfulness": 5
+    },
+    "winner": "B"
+  }
+
+  [Actual Data to Evaluate]
+  User Question: $instruction
+
+  Answer A:
+  $model_a
+
+  Answer B:
+  $model_b
+
+  Output your JSON evaluation below:

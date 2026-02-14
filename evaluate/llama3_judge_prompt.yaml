@@ -18,13 +18,13 @@ system_prompt: |
 user_prompt_template: |
   [BEGIN DATA]
   ### Instruction:
-  {instruction}
+  $instruction
 
   ### Ground Truth (Gold Standard):
-  {ground_truth}
+  $ground_truth
 
   ### Model Output (Candidate):
-  {model_output}
+  $model_output
   [END DATA]
 
   ### Evaluation Workflow:

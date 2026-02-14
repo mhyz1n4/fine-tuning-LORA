@@ -6,11 +6,13 @@ from unsloth import FastLanguageModel
 from datasets import load_dataset
 
 # Default Configuration
-DEFAULT_ADAPTER_PATH = "outputs/checkpoint-1"
+DEFAULT_ADAPTER_PATH = "model"
 DEFAULT_DATASET_NAME = "Akhil-Theerthala/Kuvera-PersonalFinance-V2.1"
 MAX_SEQ_LENGTH = 2048
 DTYPE = None # None for auto detection.
 LOAD_IN_4BIT = True
+
+SYSTEM_PROMPT = "You are a professional financial advisor specializing in personal finance. Provide accurate, clear, and helpful advice. When thinking through a problem, be logical and consider all financial implications."
 
 def load_model_and_tokenizer(model_path):
     print(f"Loading model and adapter from: {model_path}...")
@@ -24,32 +26,37 @@ def load_model_and_tokenizer(model_path):
     return model, tokenizer
 
 def generate_response(model, tokenizer, instruction):
-    prompt_style = "Below is an instruction that describes a task. Write a response that appropriately completes the request.\n\n### Instruction:\n{}\n\n### Response:\n"
+    # Match the training prompt format
+    prompt_style = "### System:\n{system}\n\n### Instruction:\n{instruction}\n\n### Response:\n"
+    
+    formatted_prompt = prompt_style.format(system=SYSTEM_PROMPT, instruction=instruction)
     
     inputs = tokenizer(
-        [prompt_style.format(instruction)],
+        [formatted_prompt],
         return_tensors = "pt"
     ).to("cuda")
 
     outputs = model.generate(
         input_ids = inputs.input_ids,
         attention_mask = inputs.attention_mask,
-        max_new_tokens = 512,
+        max_new_tokens = 1024, # Increased for CoT
         use_cache = True,
     )
     
     response = tokenizer.batch_decode(outputs)
     # Extract only the response part
-    response_text = response[0].split("### Response:\n")[-1].replace(tokenizer.eos_token, "").strip()
-    return response_text
+    full_response = response[0] if isinstance(response, list) else response
+    response_text = full_response.split("### Response:\n")[-1].replace(tokenizer.eos_token, "").strip()
+    return formatted_prompt, response_text
 
 def main():
     parser = argparse.ArgumentParser(description="Run inference on fine-tuned Qwen model.")
     parser.add_argument("--model_path", type=str, default=DEFAULT_ADAPTER_PATH, help="Path to model/adapter directory")
     parser.add_argument("--dataset", type=str, default=DEFAULT_DATASET_NAME, help="Dataset name for benchmarking")
     parser.add_argument("--prompt", type=str, help="Custom prompt for inference")
-    parser.add_argument("--num_samples", type=int, default=3, help="Number of samples from dataset to benchmark")
+    parser.add_argument("--num_samples", type=int, default=10, help="Number of samples from test set")
     parser.add_argument("--output", type=str, default="inference/inference_results.json", help="Output JSON file")
+    parser.add_argument("--seed", type=int, default=3407, help="Seed for splitting (must match training)")
     
     args = parser.parse_args()
 
@@ -62,28 +69,32 @@ def main():
 
     results = []
     
-    # 1. Benchmarking on Dataset samples
+    # 1. Benchmarking on Dataset test samples
     if args.dataset:
-        print(f"Loading dataset {args.dataset}...")
+        print(f"Loading dataset {args.dataset} and splitting (5% test)...")
         try:
-            dataset = load_dataset(args.dataset, split="train")
-            # Select some samples
-            num_to_take = min(args.num_samples, len(dataset))
-            samples = dataset.select(range(num_to_take))
+            full_dataset = load_dataset(args.dataset, split="train")
+            # Select 6000 samples and split 5% as in train_finance_unsloth.py
+            sub_dataset = full_dataset.shuffle(seed=args.seed).select(range(6000))
+            test_dataset = sub_dataset.train_test_split(test_size=0.05, seed=args.seed)["test"]
             
-            print(f"Generating responses for {num_to_take} dataset samples...")
+            num_to_take = min(args.num_samples, len(test_dataset))
+            samples = test_dataset.select(range(num_to_take))
+            
+            print(f"Generating responses for {num_to_take} test samples...")
             for i, sample in enumerate(samples):
-                query = sample.get("query", sample.get("instruction", ""))
-                expected = sample.get("response", sample.get("output", ""))
+                query = sample.get("query", "")
+                ground_truth = sample.get("response", "")
                 
                 print(f"Sample {i+1}: {query[:50]}...")
-                model_response = generate_response(model, tokenizer, query)
+                full_prompt, model_response = generate_response(model, tokenizer, query)
                 
                 results.append({
-                    "source": "dataset",
+                    "source": "test_dataset",
+                    "input_prompt": full_prompt,
                     "instruction": query,
-                    "expected_response": expected,
-                    "model_response": model_response
+                    "ground_truth": ground_truth,
+                    "model_output": model_response
                 })
         except Exception as e:
             print(f"Error loading/processing dataset: {e}")

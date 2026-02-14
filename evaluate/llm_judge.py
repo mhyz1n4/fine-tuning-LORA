@@ -4,6 +4,7 @@ import json
 import torch
 import argparse
 import random
+from string import Template
 from transformers import AutoTokenizer, AutoModelForCausalLM, BitsAndBytesConfig
 
 def load_config(config_path):
@@ -14,9 +15,10 @@ def run_judge(model_id, data_path, prompt_config_path, output_path, mode):
     # Load prompt configuration
     config = load_config(prompt_config_path)
     system_prompt = config['system_prompt']
-    user_prompt_template = config['user_prompt_template']
+    user_prompt_template = Template(config['user_prompt_template'])
 
-    # Load data
+    # Load data from inference results
+    print(f"Loading inference results from {data_path}...")
     with open(data_path, 'r') as f:
         data = json.load(f)
 
@@ -45,6 +47,11 @@ def run_judge(model_id, data_path, prompt_config_path, output_path, mode):
         instruction = entry.get('instruction', '')
         ground_truth = entry.get('ground_truth', '')
         model_output = entry.get('model_output', '')
+        input_prompt = entry.get('input_prompt', '') # Useful context for judge
+
+        if not instruction or not ground_truth or not model_output:
+            print(f"Skipping entry missing required fields: {entry.keys()}")
+            continue
 
         if mode == "pairwise":
             # Randomly assign Ground Truth and Model Output to A and B
@@ -57,7 +64,7 @@ def run_judge(model_id, data_path, prompt_config_path, output_path, mode):
                 model_a, model_b = model_output, ground_truth
                 mapping = {"Model A": "Model Output", "Model B": "Ground Truth"}
 
-            user_prompt = user_prompt_template.format(
+            user_prompt = user_prompt_template.safe_substitute(
                 instruction=instruction,
                 ground_truth=ground_truth,
                 model_a=model_a,
@@ -65,7 +72,7 @@ def run_judge(model_id, data_path, prompt_config_path, output_path, mode):
             )
         else:
             # Default scoring mode
-            user_prompt = user_prompt_template.format(
+            user_prompt = user_prompt_template.safe_substitute(
                 instruction=instruction,
                 ground_truth=ground_truth,
                 model_output=model_output
