@@ -1,0 +1,25 @@
+version: '3.8'
+
+services:
+  triton-server:
+    image: nvcr.io/nvidia/tritonserver:24.12-py3
+    container_name: triton_qwen_deployment
+    shm_size: '2gb'
+    ulimits:
+      memlock: -1
+      stack: 67108864
+    ports:
+      - "8000:8000" # HTTP
+      - "8001:8001" # gRPC
+      - "8002:8002" # Metrics
+    volumes:
+      - ./model_repository:/models/model_repository
+      - ./inference/deployed_model:/models/deployed_model
+    command: ["tritonserver", "--model-repository=/models/model_repository", "--allow-gpu-metrics=true"]
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: all
+              capabilities: [gpu]
