@@ -7,9 +7,9 @@ services:
     ports:
       - "8000:8000"
     volumes:
-      - ../inference/deployed_model:/model
+      - ../model/qwen_awq_4bit:/model
     ipc: host
-    shm_size: '2gb'
+    shm_size: '4gb'
     environment:
       - VLLM_TORCH_COMPILE_LEVEL=0
     command: >
@@ -17,11 +17,10 @@ services:
       --host 0.0.0.0
       --port 8000
       --trust-remote-code
-      --quantization bitsandbytes
-      --load-format bitsandbytes
-      --enforce-eager
-      --gpu-memory-utilization 0.95
-      --max-model-len 2048
+      --quantization awq_marlin
+      --dtype float16
+      --gpu-memory-utilization 0.90
+      --max-model-len 4096
     deploy:
       resources:
         reservations:
