@@ -1,4 +1,4 @@
-torch
+torch==2.10.0
 transformers
 peft
 accelerate
@@ -8,9 +8,17 @@ trl
 unsloth[colab-new] @ git+https://github.com/unslothai/unsloth.git
 unsloth_zoo
 xformers
-torchvision
+torchvision==0.25.0
+torchaudio==2.10.0
+triton==3.6.0
+flashinfer-python==0.6.4
+opentelemetry-api==1.40.0
 sentencepiece
 protobuf
 PyYAML
 packaging
 wheel
+optimum
+autoawq
+llmcompressor
+vllm==0.17.1
